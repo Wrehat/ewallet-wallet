@@ -1,6 +1,9 @@
 package domain
 
-import "time"
+import (
+	"context"
+	"time"
+)
 
 type Wallet struct {
 	ID        int       `json:"id" gorm:"primaryKey;autoIncrement"`
@@ -26,4 +29,15 @@ type WalletTransaction struct {
 
 func (*WalletTransaction) TableName() string {
 	return "wallet_transactions"
+}
+
+type TokenData struct {
+	UserID   int    `json:"user_id"`
+	Username string `json:"username"`
+	FullName string `json:"full_name"`
+	Email    string `json:"email"`
+}
+
+type UMSGateway interface {
+	ValidateToken(ctx context.Context, token string) (*TokenData, error)
 }

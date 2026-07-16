@@ -38,11 +38,11 @@ flowchart TD
 - [x] Konfigurasi Port & Environment terpisah dari UMS
 - [x] Integrasi structured logger (zap) & database connection pool
 - [x] Health Check Endpoint (HTTP GET /health) dengan Ping DB MySQL
+- [x] Migrasi Database (Tabel `wallets` & `wallet_transactions`)
+- [x] Implementasi gRPC Client untuk integrasi dengan UMS
 
 ### 🎯 Target Selanjutnya (Up Next)
 
-- [ ] Migrasi Database (Tabel `wallets` & `wallet_transactions`)
-- [ ] Implementasi gRPC Client untuk integrasi dengan UMS
 - [ ] API Create Wallet (di-trigger HTTP dari UMS post-register)
 - [ ] API Credit Balance (Mutasi masuk & Idempotency check)
 - [ ] API Debit Balance (Mutasi keluar, Saldo check, & Pessimistic Locking)
@@ -52,14 +52,14 @@ flowchart TD
 
 ## 🚀 Port & Endpoint Reference
 
-* **HTTP Server (Router: Gin):** `http://localhost:8081`
-  * `POST /wallet/v1/` - Inisialisasi Wallet Baru
-  * `PUT /wallet/v1/balance/credit` - Pengisian Saldo (Credit)
-  * `PUT /wallet/v1/balance/debit` - Penarikan/Pembayaran Saldo (Debit)
-  * `GET /wallet/v1/balance` - Cek Saldo Terkini
-  * `GET /wallet/v1/history` - History Transaksi Dompet
-  * `GET /health` - Liveness & Database Ping
-* **gRPC Server:** `localhost:9091` (reserved)
+- **HTTP Server (Router: Gin):** `http://localhost:8081`
+  - `POST /wallet/v1/` - Inisialisasi Wallet Baru
+  - `PUT /wallet/v1/balance/credit` - Pengisian Saldo (Credit)
+  - `PUT /wallet/v1/balance/debit` - Penarikan/Pembayaran Saldo (Debit)
+  - `GET /wallet/v1/balance` - Cek Saldo Terkini
+  - `GET /wallet/v1/history` - History Transaksi Dompet
+  - `GET /health` - Liveness & Database Ping
+- **gRPC Server:** `localhost:9091` (reserved)
 
 ---
 
