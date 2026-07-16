@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/Wrehat/ewallet-wallet/internal/domain"
 	"go.uber.org/zap"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
@@ -42,5 +43,10 @@ func SetupDB(dsn string, log *zap.Logger) (*gorm.DB, error) {
 	}
 
 	log.Info("success connect database")
+
+	if err := db.AutoMigrate(&domain.Wallet{}, &domain.WalletTransaction{}); err != nil {
+		return nil, fmt.Errorf("failed auto-migrate table : %v", err)
+	}
+
 	return db, nil
 }
