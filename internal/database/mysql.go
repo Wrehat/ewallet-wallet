@@ -14,6 +14,8 @@ import (
 func SetupDB(dsn string, log *zap.Logger) (*gorm.DB, error) {
 	logger := zapgorm2.New(log)
 	logger.SetAsDefault()
+	logger.IgnoreRecordNotFoundError = true
+	logger.SlowThreshold = 500 * time.Millisecond
 
 	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{
 		Logger: logger,

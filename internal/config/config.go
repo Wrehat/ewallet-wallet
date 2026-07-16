@@ -1,6 +1,7 @@
 package config
 
 import (
+	"fmt"
 	"log"
 
 	"github.com/knadh/koanf/parsers/dotenv"
@@ -13,7 +14,16 @@ type AppConfig struct {
 	AppEnv      string `koanf:"APP_ENV"`
 	AppPort     string `koanf:"APP_PORT"`
 	AppGrpcPort string `koanf:"APP_GRPC_PORT"`
-	DbURI       string `koanf:"DB_URI"`
+	DbHost      string `koanf:"DB_HOST"`
+	DbPort      string `koanf:"DB_PORT"`
+	DbUser      string `koanf:"DB_USER"`
+	DbPassword  string `koanf:"DB_PASSWORD"`
+	DbName      string `koanf:"DB_NAME"`
+	UmsGrpcHost string `koanf:"UMS_GRPC_HOST"`
+}
+
+func (a *AppConfig) DSN() string {
+	return fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8mb4&parseTime=True&loc=Local", a.DbUser, a.DbPassword, a.DbHost, a.DbPort, a.DbName)
 }
 
 func SetupConfig() *AppConfig {
@@ -35,9 +45,14 @@ func SetupConfig() *AppConfig {
 	// Default value
 	config := AppConfig{
 		AppEnv:      "development",
-		AppPort:     "8080",
-		AppGrpcPort: "9090",
-		DbURI:       "user:password@tcp(127.0.0.1:3306)/ewallet?charset=utf8mb4&parseTime=True&loc=Local",
+		AppPort:     "8081",
+		AppGrpcPort: "9091",
+		DbHost:      "127.0.0.1",
+		DbPort:      "3306",
+		DbUser:      "root",
+		DbPassword:  "password",
+		DbName:      "ewallet_wallet",
+		UmsGrpcHost: "localhost:9090",
 	}
 
 	// Unmarshal to struct go

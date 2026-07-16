@@ -26,7 +26,7 @@ func main() {
 	defer zapLog.Sync()
 
 	// Setup database
-	db, err := database.SetupDB(cfg.DbURI, zapLog)
+	db, err := database.SetupDB(cfg.DSN(), zapLog)
 	if err != nil {
 		zapLog.Fatal("failed setup database", zap.Error(err))
 	}
