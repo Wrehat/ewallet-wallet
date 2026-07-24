@@ -41,3 +41,16 @@ type TokenData struct {
 type UMSGateway interface {
 	ValidateToken(ctx context.Context, token string) (*TokenData, error)
 }
+
+type WalletRepository interface {
+	CreateWallet(ctx context.Context, wallet *Wallet) error
+	GetTransactionByReference(ctx context.Context, ref string) (*WalletTransaction, error)
+	UpdateBalance(ctx context.Context, userID int, amount float64) (*Wallet, error)
+	CreateTransaction(ctx context.Context, tx *WalletTransaction) error
+}
+
+type WalletUsecase interface {
+	Create(ctx context.Context, wallet *Wallet) error
+	Credit(ctx context.Context, userID int, amount float64, ref string) (*WalletTransaction, error)
+	Debit(ctx context.Context, userID int, amount float64, ref string) (*WalletTransaction, error)
+}

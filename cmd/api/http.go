@@ -20,8 +20,18 @@ func ServeHTTP(ctx context.Context, cfg *config.AppConfig, log *zap.Logger, db *
 	hCheckUc := usecase.NewHealthUsecase(hCheckRepo)
 	hCheckHndlr := handler.NewHealthHandler(hCheckUc)
 
+	walletRepo := repository.NewWalletRepo(db)
+	walletUc := usecase.NewWalletUsecase(walletRepo, log)
+	walletHndlr := handler.NewWalletHandler(walletUc, log)
+
 	r := gin.New()
 	r.Use(gin.Recovery())
+
+	apiV1 := r.Group("/api/v1")
+	walletGroup := apiV1.Group("wallets")
+	{
+		walletGroup.POST("/", walletHndlr.CreateWallet)
+	}
 
 	r.GET("/health", hCheckHndlr.HealthCheck)
 
