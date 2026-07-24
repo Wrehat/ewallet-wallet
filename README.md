@@ -41,11 +41,10 @@ flowchart TD
 - [x] Migrasi Database (Tabel `wallets` & `wallet_transactions`)
 - [x] Implementasi gRPC Client untuk integrasi dengan UMS
 - [x] API Create Wallet (`POST /api/v1/wallets/`)
+- [x] API Credit Balance (`PUT /api/v1/wallets/credit`) - Idempotency + gRPC Auth
+- [x] API Debit Balance (`PUT /api/v1/wallets/debit`) - Pessimistic Locking + Saldo 
 
 ### 🎯 Target Selanjutnya (Up Next)
-
-- [ ] API Credit Balance (Mutasi masuk & Idempotency check)
-- [ ] API Debit Balance (Mutasi keluar, Saldo check, & Pessimistic Locking)
 - [ ] API Get Balance & Wallet History (Mutasi history dengan pagination)
 
 ---

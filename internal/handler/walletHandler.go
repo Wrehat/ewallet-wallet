@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"errors"
 	"net/http"
 
 	"github.com/Wrehat/ewallet-wallet/internal/domain"
@@ -16,6 +17,11 @@ type walletHandler struct {
 
 type CreateWalletReq struct {
 	UserID int `json:"user_id" binding:"required"`
+}
+
+type TransactionReq struct {
+	Amount float64 `json:"amount" binding:"required,gt=0"`
+	Ref    string  `json:"reference" binding:"required"`
 }
 
 func NewWalletHandler(uc domain.WalletUsecase, log *zap.Logger) *walletHandler {
@@ -49,5 +55,110 @@ func (h *walletHandler) CreateWallet(c *gin.Context) {
 	}
 
 	response.JSON(c, http.StatusCreated, "success create wallet", nil)
+}
+
+func (h *walletHandler) CreditBalance(c *gin.Context) {
+	var req TransactionReq
+
+	val, exists := c.Get("user")
+	if !exists {
+		h.log.Warn("user not found context")
+		response.JSON(c, http.StatusUnauthorized, "user not found context", nil)
+		c.Abort()
+		return
+	}
+
+	tokenData := val.(*domain.TokenData)
+
+	if err := c.ShouldBindJSON(&req); err != nil {
+		h.log.Error("failed parse request : ", zap.Error(err))
+		response.JSON(c, http.StatusBadRequest, "failed parse request", nil)
+		return
+	}
+
+	_, err := h.uc.Credit(c.Request.Context(), tokenData.UserID, req.Amount, req.Ref)
+
+	if err != nil {
+		if errors.Is(err, domain.ErrDuplicateReference) {
+			h.log.Warn("transaction ref duplicate", zap.Error(err))
+			response.JSON(c, http.StatusConflict, "transaction ref duplicated", nil)
+			c.Abort()
+			return
+		}
+
+		if errors.Is(err, domain.ErrInsufficientBalance) {
+			h.log.Warn("insufficient balance", zap.Error(err))
+			response.JSON(c, http.StatusBadRequest, "insufficient balance", nil)
+			c.Abort()
+			return
+		}
+
+		if errors.Is(err, domain.ErrRecordNotFound) {
+			h.log.Warn("wallet not found", zap.Error(err))
+			response.JSON(c, http.StatusNotFound, "wallet not found", nil)
+			c.Abort()
+			return
+		}
+
+		h.log.Error("internal server error", zap.Error(err))
+		response.JSON(c, http.StatusInternalServerError, "internal server error", nil)
+		c.Abort()
+		return
+	}
+
+	response.JSON(c, http.StatusOK, "success credit balance", nil)
+
+}
+
+func (h *walletHandler) DebitBalance(c *gin.Context) {
+	var req TransactionReq
+
+	val, exists := c.Get("user")
+	if !exists {
+		h.log.Warn("user not found context")
+		response.JSON(c, http.StatusBadRequest, "user not found context", nil)
+		c.Abort()
+		return
+	}
+
+	tokenData := val.(*domain.TokenData)
+
+	if err := c.ShouldBindJSON(&req); err != nil {
+		h.log.Error("failed parse request : ", zap.Error(err))
+		response.JSON(c, http.StatusBadRequest, "failed parse request", nil)
+		return
+	}
+
+	_, err := h.uc.Debit(c.Request.Context(), tokenData.UserID, req.Amount, req.Ref)
+
+	if err != nil {
+		if errors.Is(err, domain.ErrDuplicateReference) {
+			h.log.Warn("transaction ref duplicate", zap.Error(err))
+			response.JSON(c, http.StatusConflict, "transaction ref duplicated", nil)
+			c.Abort()
+			return
+		}
+
+		if errors.Is(err, domain.ErrInsufficientBalance) {
+			h.log.Warn("insufficient balance", zap.Error(err))
+			response.JSON(c, http.StatusBadRequest, "insufficient balance", nil)
+			c.Abort()
+			return
+		}
+
+		if errors.Is(err, domain.ErrRecordNotFound) {
+			h.log.Warn("wallet not found", zap.Error(err))
+			response.JSON(c, http.StatusNotFound, "wallet not found", nil)
+			c.Abort()
+			return
+		}
+
+		h.log.Error("internal server error", zap.Error(err))
+		response.JSON(c, http.StatusInternalServerError, "internal server error", nil)
+		c.Abort()
+		return
+	}
+
+	response.JSON(c, http.StatusOK, "success debit balance", nil)
 
 }

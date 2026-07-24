@@ -2,6 +2,7 @@ package domain
 
 import (
 	"context"
+	"errors"
 	"time"
 )
 
@@ -54,3 +55,11 @@ type WalletUsecase interface {
 	Credit(ctx context.Context, userID int, amount float64, ref string) (*WalletTransaction, error)
 	Debit(ctx context.Context, userID int, amount float64, ref string) (*WalletTransaction, error)
 }
+
+var (
+	ErrRecordNotFound           = errors.New("record data tidak ditemukan")
+	ErrInsufficientBalance      = errors.New("saldo tidak mencukupi")
+	ErrDuplicateReference       = errors.New("transaksi dengan referensi ini sudah pernah diproses")
+	WalletTransactionTypeCredit = "CREDIT"
+	WalletTransactionTypeDebit  = "DEBIT"
+)

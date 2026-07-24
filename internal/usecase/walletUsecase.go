@@ -2,6 +2,7 @@ package usecase
 
 import (
 	"context"
+	"errors"
 
 	"github.com/Wrehat/ewallet-wallet/internal/domain"
 	"go.uber.org/zap"
@@ -25,4 +26,64 @@ func (u *walletUsecase) Create(ctx context.Context, wallet *domain.Wallet) error
 		return err
 	}
 	return nil
+}
+
+func (u *walletUsecase) Credit(ctx context.Context, userID int, amount float64, ref string) (*domain.WalletTransaction, error) {
+	_, err := u.repo.GetTransactionByReference(ctx, ref)
+	if err == nil {
+		return nil, domain.ErrDuplicateReference
+	}
+
+	if !errors.Is(err, domain.ErrRecordNotFound) {
+		return nil, err
+	}
+
+	updatedWallet, err := u.repo.UpdateBalance(ctx, userID, amount)
+	if err != nil {
+		return nil, err
+	}
+
+	tx := domain.WalletTransaction{
+		WalletID:              updatedWallet.ID,
+		Amount:                amount,
+		WalletTransactionType: domain.WalletTransactionTypeCredit,
+		Reference:             ref,
+	}
+
+	if err := u.repo.CreateTransaction(ctx, &tx); err != nil {
+		return nil, err
+	}
+
+	return &tx, nil
+
+}
+
+func (u *walletUsecase) Debit(ctx context.Context, userID int, amount float64, ref string) (*domain.WalletTransaction, error) {
+	_, err := u.repo.GetTransactionByReference(ctx, ref)
+	if err == nil {
+		return nil, domain.ErrDuplicateReference
+	}
+
+	if !errors.Is(err, domain.ErrRecordNotFound) {
+		return nil, err
+	}
+
+	updatedWallet, err := u.repo.UpdateBalance(ctx, userID, -amount)
+	if err != nil {
+		return nil, err
+	}
+
+	tx := domain.WalletTransaction{
+		WalletID:              updatedWallet.ID,
+		Amount:                -amount,
+		WalletTransactionType: domain.WalletTransactionTypeDebit,
+		Reference:             ref,
+	}
+
+	if err := u.repo.CreateTransaction(ctx, &tx); err != nil {
+		return nil, err
+	}
+
+	return &tx, nil
+
 }

@@ -7,6 +7,7 @@ import (
 
 	"github.com/Wrehat/ewallet-wallet/internal/config"
 	"github.com/Wrehat/ewallet-wallet/internal/handler"
+	"github.com/Wrehat/ewallet-wallet/internal/middleware"
 	"github.com/Wrehat/ewallet-wallet/internal/repository"
 	"github.com/Wrehat/ewallet-wallet/internal/usecase"
 	"github.com/gin-gonic/gin"
@@ -27,10 +28,19 @@ func ServeHTTP(ctx context.Context, cfg *config.AppConfig, log *zap.Logger, db *
 	r := gin.New()
 	r.Use(gin.Recovery())
 
+	umsGateway := repository.NewUMSGateway(cfg.UmsGrpcHost)
+
+	authMiddleware := middleware.AuthMiddleware(umsGateway, log)
+
 	apiV1 := r.Group("/api/v1")
-	walletGroup := apiV1.Group("wallets")
+	walletGroup := apiV1.Group("/wallets")
 	{
 		walletGroup.POST("/", walletHndlr.CreateWallet)
+		walletAuth := walletGroup.Use(authMiddleware)
+		{
+			walletAuth.PUT("/credit", walletHndlr.CreditBalance)
+			walletAuth.PUT("/debit", walletHndlr.DebitBalance)
+		}
 	}
 
 	r.GET("/health", hCheckHndlr.HealthCheck)
