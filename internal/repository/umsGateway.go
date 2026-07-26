@@ -12,28 +12,24 @@ import (
 )
 
 type umsGateway struct {
-	umsHost string
+	client tokenvalidation.TokenValidationClient
 }
 
-func NewUMSGateway(host string) domain.UMSGateway {
-	return &umsGateway{
-		umsHost: host,
+func NewUMSGateway(host string) (domain.UMSGateway, error) {
+	conn, err := grpc.NewClient(host, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	if err != nil {
+		return nil, fmt.Errorf("failed to connect UMS gRPC: %w", err)
 	}
+	return &umsGateway{
+		client: tokenvalidation.NewTokenValidationClient(conn),
+	}, nil
 }
 
 func (g *umsGateway) ValidateToken(ctx context.Context, token string) (*domain.TokenData, error) {
-	conn, err := grpc.NewClient(g.umsHost, grpc.WithTransportCredentials(insecure.NewCredentials()))
-	if err != nil {
-		return nil, fmt.Errorf("failed to connect to UMS: %v", err)
-	}
-	defer conn.Close()
 
-	client := tokenvalidation.NewTokenValidationClient(conn)
-
-	res, err := client.ValidateToken(ctx, &tokenvalidation.TokenRequest{
+	res, err := g.client.ValidateToken(ctx, &tokenvalidation.TokenRequest{
 		Token: token,
 	})
-
 	if err != nil {
 		return nil, err
 	}

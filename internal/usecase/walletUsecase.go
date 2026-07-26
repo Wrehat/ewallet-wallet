@@ -75,7 +75,7 @@ func (u *walletUsecase) Debit(ctx context.Context, userID int, amount float64, r
 
 	tx := domain.WalletTransaction{
 		WalletID:              updatedWallet.ID,
-		Amount:                -amount,
+		Amount:                amount,
 		WalletTransactionType: domain.WalletTransactionTypeDebit,
 		Reference:             ref,
 	}

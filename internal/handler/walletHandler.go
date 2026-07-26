@@ -116,7 +116,7 @@ func (h *walletHandler) DebitBalance(c *gin.Context) {
 	val, exists := c.Get("user")
 	if !exists {
 		h.log.Warn("user not found context")
-		response.JSON(c, http.StatusBadRequest, "user not found context", nil)
+		response.JSON(c, http.StatusUnauthorized, "user not found context", nil)
 		c.Abort()
 		return
 	}

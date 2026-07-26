@@ -28,7 +28,10 @@ func ServeHTTP(ctx context.Context, cfg *config.AppConfig, log *zap.Logger, db *
 	r := gin.New()
 	r.Use(gin.Recovery())
 
-	umsGateway := repository.NewUMSGateway(cfg.UmsGrpcHost)
+	umsGateway, err := repository.NewUMSGateway(cfg.UmsGrpcHost)
+	if err != nil {
+		log.Fatal("failed to create UMS gateway : ", zap.Error(err))
+	}
 
 	authMiddleware := middleware.AuthMiddleware(umsGateway, log)
 
