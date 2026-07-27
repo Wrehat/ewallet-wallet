@@ -162,3 +162,79 @@ func (h *walletHandler) DebitBalance(c *gin.Context) {
 	response.JSON(c, http.StatusOK, "success debit balance", nil)
 
 }
+
+func (h *walletHandler) GetBalance(c *gin.Context) {
+	val, exists := c.Get("user")
+	if !exists {
+		h.log.Warn("user not found context")
+		response.JSON(c, http.StatusUnauthorized, "user unauthorized", nil)
+		return
+	}
+
+	tokenData := val.(*domain.TokenData)
+
+	wallet, err := h.uc.GetBalance(c.Request.Context(), tokenData.UserID)
+	if err != nil {
+		if errors.Is(err, domain.ErrRecordNotFound) {
+			h.log.Warn("wallet not found", zap.Error(err))
+			response.JSON(c, http.StatusNotFound, "wallet not found", nil)
+			return
+		}
+
+		h.log.Error("internal server error", zap.Error(err))
+		response.JSON(c, http.StatusInternalServerError, "internal server error", nil)
+		return
+	}
+
+	response.JSON(c, http.StatusOK, "success get balance", wallet)
+}
+
+func (h *walletHandler) GetTransactionHistory(c *gin.Context) {
+	val, exists := c.Get("user")
+
+	if !exists {
+		h.log.Warn("user not found context")
+		response.JSON(c, http.StatusUnauthorized, "user unauthorized", nil)
+		return
+	}
+
+	tokenData := val.(*domain.TokenData)
+
+	var param domain.WalletHistoryParam
+
+	if err := c.ShouldBindQuery(&param); err != nil {
+		h.log.Error("failed parse params", zap.Error(err))
+		response.JSON(c, http.StatusBadRequest, "failed parse params", nil)
+		return
+	}
+
+	if param.Page <= 0 {
+		param.Page = 1
+	}
+
+	if param.Limit <= 0 {
+		param.Limit = 10
+	}
+
+	if param.Type != "" && param.Type != domain.WalletTransactionTypeCredit && param.Type != domain.WalletTransactionTypeDebit {
+		h.log.Warn("invalid wallet transaction type")
+		response.JSON(c, http.StatusBadRequest, "invalid wallet transaction type", nil)
+		return
+	}
+
+	listTrx, err := h.uc.GetHistory(c.Request.Context(), tokenData.UserID, param)
+	if err != nil {
+		if errors.Is(err, domain.ErrRecordNotFound) {
+			h.log.Warn("wallet not found", zap.Error(err))
+			response.JSON(c, http.StatusNotFound, "wallet not found", nil)
+			return
+		}
+
+		h.log.Error("internal server error", zap.Error(err))
+		response.JSON(c, http.StatusInternalServerError, "internal server error", nil)
+		return
+	}
+
+	response.JSON(c, http.StatusOK, "success get transactions", listTrx)
+
+}

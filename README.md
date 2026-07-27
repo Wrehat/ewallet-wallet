@@ -1,7 +1,6 @@
 # Wallet Service - E-Wallet
 
 ![Go Version](https://img.shields.io/badge/Go-1.25+-00ADD8?style=flat-square&logo=go&logoColor=white)
-![License](https://img.shields.io/badge/License-MIT-blue.svg?style=flat-square)
 ![Architecture](https://img.shields.io/badge/Architecture-Clean-orange?style=flat-square)
 ![gRPC](https://img.shields.io/badge/gRPC-Client_Enabled-blue?style=flat-square)
 
@@ -42,12 +41,11 @@ flowchart TD
 - [x] Implementasi gRPC Client untuk integrasi dengan UMS
 - [x] API Create Wallet (`POST /api/v1/wallets/`)
 - [x] API Credit Balance (`PUT /api/v1/wallets/credit`) - Idempotency + gRPC Auth
-- [x] API Debit Balance (`PUT /api/v1/wallets/debit`) - Pessimistic Locking + Saldo 
+- [x] API Debit Balance (`PUT /api/v1/wallets/debit`) - Pessimistic Locking + Saldo Check
+- [x] API Get Balance (`GET /api/v1/wallets/balance`) - Saldo Terkini
+- [x] API Wallet History (`GET /api/v1/wallets/history`) - Pagination + Filter Tipe Transaksi
 
-### 🎯 Target Selanjutnya (Up Next)
-- [ ] API Get Balance & Wallet History (Mutasi history dengan pagination)
-
----
+### 🎉 Status Proyek: COMPLETED!
 
 ## 🚀 Port & Endpoint Reference
 

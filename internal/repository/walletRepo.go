@@ -74,3 +74,40 @@ func (r *walletRepo) UpdateBalance(ctx context.Context, userID int, amount float
 
 	return &wallet, nil
 }
+
+func (r *walletRepo) GetWalletByUserID(ctx context.Context, userID int) (*domain.Wallet, error) {
+	var wallet domain.Wallet
+
+	err := r.db.WithContext(ctx).Where("user_id = ?", userID).First(&wallet).Error
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, domain.ErrRecordNotFound
+		}
+		return nil, err
+	}
+
+	return &wallet, nil
+}
+
+func (r *walletRepo) GetTransactionHistory(ctx context.Context, walletID int, param domain.WalletHistoryParam) ([]domain.WalletTransaction, error) {
+	var trx []domain.WalletTransaction
+
+	offset := (param.Page - 1) * param.Limit
+
+	query := r.db.WithContext(ctx).Where("wallet_id = ?", walletID)
+
+	if param.Type != "" {
+		query = query.Where("wallet_transaction_type = ?", param.Type)
+	}
+
+	err := query.Order("id DESC").Limit(param.Limit).Offset(offset).Find(&trx).Error
+
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, domain.ErrRecordNotFound
+		}
+		return nil, err
+	}
+
+	return trx, nil
+}

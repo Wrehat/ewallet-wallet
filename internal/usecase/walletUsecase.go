@@ -87,3 +87,27 @@ func (u *walletUsecase) Debit(ctx context.Context, userID int, amount float64, r
 	return &tx, nil
 
 }
+
+func (u *walletUsecase) GetBalance(ctx context.Context, userID int) (*domain.Wallet, error) {
+	wallet, err := u.repo.GetWalletByUserID(ctx, userID)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return wallet, nil
+}
+
+func (u *walletUsecase) GetHistory(ctx context.Context, userID int, param domain.WalletHistoryParam) ([]domain.WalletTransaction, error) {
+	wallet, err := u.repo.GetWalletByUserID(ctx, userID)
+	if err != nil {
+		return nil, err
+	}
+
+	listTrx, err := u.repo.GetTransactionHistory(ctx, wallet.ID, param)
+	if err != nil {
+		return nil, err
+	}
+
+	return listTrx, nil
+}

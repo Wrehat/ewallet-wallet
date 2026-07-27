@@ -43,6 +43,8 @@ func ServeHTTP(ctx context.Context, cfg *config.AppConfig, log *zap.Logger, db *
 		{
 			walletAuth.PUT("/credit", walletHndlr.CreditBalance)
 			walletAuth.PUT("/debit", walletHndlr.DebitBalance)
+			walletAuth.GET("/balance", walletHndlr.GetBalance)
+			walletAuth.GET("/history", walletHndlr.GetTransactionHistory)
 		}
 	}
 

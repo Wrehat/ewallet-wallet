@@ -39,6 +39,12 @@ type TokenData struct {
 	Email    string `json:"email"`
 }
 
+type WalletHistoryParam struct {
+	Page  int    `form:"page"`
+	Limit int    `form:"limit"`
+	Type  string `form:"type"`
+}
+
 type UMSGateway interface {
 	ValidateToken(ctx context.Context, token string) (*TokenData, error)
 }
@@ -48,12 +54,16 @@ type WalletRepository interface {
 	GetTransactionByReference(ctx context.Context, ref string) (*WalletTransaction, error)
 	UpdateBalance(ctx context.Context, userID int, amount float64) (*Wallet, error)
 	CreateTransaction(ctx context.Context, tx *WalletTransaction) error
+	GetWalletByUserID(ctx context.Context, userID int) (*Wallet, error)
+	GetTransactionHistory(ctx context.Context, walletID int, params WalletHistoryParam) ([]WalletTransaction, error)
 }
 
 type WalletUsecase interface {
 	Create(ctx context.Context, wallet *Wallet) error
 	Credit(ctx context.Context, userID int, amount float64, ref string) (*WalletTransaction, error)
 	Debit(ctx context.Context, userID int, amount float64, ref string) (*WalletTransaction, error)
+	GetBalance(ctx context.Context, userID int) (*Wallet, error)
+	GetHistory(ctx context.Context, userID int, params WalletHistoryParam) ([]WalletTransaction, error)
 }
 
 var (
@@ -62,4 +72,5 @@ var (
 	ErrDuplicateReference       = errors.New("transaksi dengan referensi ini sudah pernah diproses")
 	WalletTransactionTypeCredit = "CREDIT"
 	WalletTransactionTypeDebit  = "DEBIT"
+
 )
